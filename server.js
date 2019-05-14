@@ -18,7 +18,7 @@ const eventLifecycle = require('./lib/lifecycle/event');
 
 const app = module.exports = express();
 app.use(bodyParser.json());
-app.post('/', function(req, response) {
+app.post('/', function (req, response) {
     callbackHandler(req, response)
 });
 
@@ -47,12 +47,13 @@ function signatureIsVerified(req) {
 
 function handleCallback(req, response) {
     let evt = req.body;
+    log.info(`Lifecycle= ${evt.lifecycle}`)
     switch (evt.lifecycle) {
 
         // PING happens during app creation. Respond with challenge to verify app
         case 'PING': {
             log.trace(`${evt.lifecycle}\nREQUEST: ${JSON.stringify(evt, null, 2)}`);
-            log.response(response, {statusCode: 200, pingData: {challenge: evt.pingData.challenge}});
+            log.response(response, { statusCode: 200, pingData: { challenge: evt.pingData.challenge } });
             break;
         }
 
@@ -79,7 +80,7 @@ function handleCallback(req, response) {
             log.debug(JSON.stringify(evt));
             oauthLifecycle.handleOauthCallback(evt.oauthCallbackData);
             log.trace(`RESPONSE: ${JSON.stringify(evt, null, 2)}`);
-            log.response(response, {statusCode: 200, oAuthCallbackData: {}});
+            log.response(response, { statusCode: 200, oAuthCallbackData: {} });
             break;
         }
 
@@ -87,15 +88,15 @@ function handleCallback(req, response) {
             log.trace(`${evt.lifecycle}\nREQUEST: ${JSON.stringify(evt, null, 2)}`);
             crudLifecycle.install(evt.installData);
             log.trace(`RESPONSE: ${JSON.stringify(evt, null, 2)}`);
-            log.response(response, {statusCode: 200, installData: {}});
+            log.response(response, { statusCode: 200, installData: {} });
             break;
         }
 
         case 'UPDATE': {
-            log.trace(`${evt.lifecycle}\nREQUEST: ${JSON.stringify(evt, null, 2)}`);
+           log.trace(`${evt.lifecycle}\nREQUEST: ${JSON.stringify(evt, null, 2)}`);
             crudLifecycle.update(evt.updateData);
             log.trace(`RESPONSE: ${JSON.stringify(evt, null, 2)}`);
-            log.response(response, {statusCode: 200, updateData: {}});
+            log.response(response, { statusCode: 200, updateData: {} });
             break;
         }
 
@@ -103,21 +104,24 @@ function handleCallback(req, response) {
             log.trace(`${evt.lifecycle}\nREQUEST: ${JSON.stringify(evt, null, 2)}`);
             crudLifecycle.uninstall(evt.uninstallData);
             log.trace(`RESPONSE: ${JSON.stringify(evt, null, 2)}`);
-            log.response(response, {statusCode: 200, uninstallData: {}});
+            log.response(response, { statusCode: 200, uninstallData: {} });
             break;
         }
 
         case 'EVENT': {
             log.trace(`${evt.lifecycle}\nREQUEST: ${JSON.stringify(evt, null, 2)}`);
-            evt.eventData.events.forEach(function(event) {
+            evt.eventData.events.forEach(function (event) {
+                log.info(`================Received ==========${event.eventType}`);
                 switch (event.eventType) {
                     case "DEVICE_EVENT": {
+                        log.info(`================Received DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT DEVICE_EVENT==========${event.eventType}`);
                         break;
                     }
-                    case "TIMER_EVENT": {
-                        eventLifecycle.handleScheduledEvent(evt.eventData, event);
-                        break;
-                    }
+                    // DONT do a sync as we spoof and return a device everytime even if it doesnt exist.
+                    //case "TIMER_EVENT": {
+                    //    eventLifecycle.handleScheduledEvent(evt.eventData, event);
+                    //    break;
+                    // }
                     case "DEVICE_COMMANDS_EVENT": {
                         eventLifecycle.handleDeviceCommand(evt.eventData, event);
                         break;
@@ -127,7 +131,7 @@ function handleCallback(req, response) {
                     }
                 }
             });
-            log.response(response, {statusCode: 200, eventData: {}});
+            log.response(response, { statusCode: 200, eventData: {} });
             break;
         }
 
